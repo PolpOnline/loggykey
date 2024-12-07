@@ -10,9 +10,9 @@ lto = true
 panic = "abort"
 
 [dependencies]
-gethostname = "0.4.3"
+gethostname = "0.5.0"
 obfstr = "0.4.3"
 rdev = "0.5.3"
-teloxide = { version = "0.12.2", features = ["macros"] }
+teloxide = { version = "0.13.0", features = ["macros", "rustls", "ctrlc_handler"], default-features = false }
 tokio = { version = "1.35.0", features = ["rt-multi-thread", "macros"] }
-webbrowser = "0.8.12"
+webbrowser = "1.0.3"
