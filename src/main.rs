@@ -126,13 +126,17 @@ async fn main() {
         }
     });
 
+    let key_buffer = Arc::new(Mutex::new(String::new()));
+
     let task = {
+        let tx_clone = tx.clone();
+        let key_buffer_clone = key_buffer.clone();
         tokio::task::spawn_blocking(move || {
-            let key_buffer = Arc::new(Mutex::new(String::new()));
+            let tx = tx_clone.clone();
 
             listen(move |event| {
                 let tx = tx.clone();
-                let key_buffer_value = key_buffer.clone();
+                let key_buffer_value = key_buffer_clone.clone();
 
                 tokio::spawn(async move {
                     handle_key(event.event_type, tx, key_buffer_value).await;
@@ -141,6 +145,21 @@ async fn main() {
             .expect("Failed while listening to keyboard events");
         })
     };
+
+    {
+        let tx = tx.clone();
+        ctrlc::set_handler(move || {
+            let key_buffer = key_buffer.lock().unwrap().clone();
+
+            tx.send("Terminating by SIGINT, SIGTERM or SIGHUP".to_string())
+                .unwrap();
+
+            tx.send(key_buffer).unwrap();
+
+            std::process::exit(0);
+        })
+        .expect("Failed to set Ctrl-C handler");
+    }
 
     tokio::select! {
         _ = bot_task => {}
